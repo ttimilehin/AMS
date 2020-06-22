@@ -19,9 +19,16 @@ class HomeController extends Controller
     }
 
     public function index(){
-        return view('dashboard');
-
-        // return ('index');
+        if(Auth::check() && Auth::user()->level == 'superadmin'){
+            $details['num_asset'] = count(DB::table('assets')->select('itemNo')->get());
+            $details['asset'] = DB::table('assets')->select('*')->get();
+            $details['sum_value'] = collect($details['asset'])->sum('asset_value');
+        }else{
+            $details['num_asset'] = count(DB::table('assets')->select('itemNo')->where('mda', Auth::user()->mda)->get());
+            $details['asset'] = DB::table('assets')->where('mda', Auth::user()->mda)->get();
+            $details['sum_value'] = collect($details['asset'])->sum('asset_value');
+        }
+        return view('dashboard', $details);
     }
 
     public function dashboard(){
